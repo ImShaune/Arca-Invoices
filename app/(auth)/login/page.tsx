@@ -1,0 +1,177 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { motion } from "framer-motion";
+import { Loader2, FileText, Eye, EyeOff } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
+const loginSchema = z.object({
+    email: z
+        .string()
+        .min(1, "El email es requerido")
+        .email("El email no es válido"),
+    password: z
+        .string()
+        .min(1, "La contraseña es requerida")
+        .min(6, "La contraseña debe tener al menos 6 caracteres"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
+export default function LoginPage() {
+    const router = useRouter();
+    const supabase = createClient();
+    const [showPassword, setShowPassword] = useState(false);
+    const [authError, setAuthError] = useState<string | null>(null);
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+    } = useForm<LoginFormData>({
+        resolver: zodResolver(loginSchema),
+    });
+
+    async function onSubmit(data: LoginFormData) {
+        setAuthError(null);
+
+        const { error } = await supabase.auth.signInWithPassword({
+            email: data.email,
+            password: data.password,
+        });
+
+        if (error) {
+            setAuthError(
+                error.message === "Invalid login credentials"
+                    ? "Email o contraseña incorrectos"
+                    : "Ocurrió un error. Intentá de nuevo."
+            );
+            return;
+        }
+
+        router.push("/dashboard");
+        router.refresh();
+    }
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="w-full max-w-md px-4"
+        >
+            {/* Card con glassmorphism */}
+            <div className="rounded-2xl border bg-card/80 p-8 shadow-2xl backdrop-blur-sm">
+                {/* Logo */}
+                <div className="mb-8 flex flex-col items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-lg">
+                        <FileText className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <div className="text-center">
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            ARCA Invoices
+                        </h1>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            Iniciá sesión para continuar
+                        </p>
+                    </div>
+                </div>
+
+                {/* Error de autenticación */}
+                {authError && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+                    >
+                        {authError}
+                    </motion.div>
+                )}
+
+                {/* Formulario */}
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="tu@email.com"
+                            autoComplete="email"
+                            {...register("email")}
+                            className={cn(errors.email && "border-destructive")}
+                        />
+                        {errors.email && (
+                            <p className="text-xs text-destructive">
+                                {errors.email.message}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="password">Contraseña</Label>
+                        <div className="relative">
+                            <Input
+                                id="password"
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••"
+                                autoComplete="current-password"
+                                {...register("password")}
+                                className={cn(
+                                    "pr-10",
+                                    errors.password && "border-destructive"
+                                )}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                aria-label={
+                                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                                }
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                ) : (
+                                    <Eye className="h-4 w-4" />
+                                )}
+                            </button>
+                        </div>
+                        {errors.password && (
+                            <p className="text-xs text-destructive">
+                                {errors.password.message}
+                            </p>
+                        )}
+                    </div>
+
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Iniciando sesión...
+                            </>
+                        ) : (
+                            "Iniciar sesión"
+                        )}
+                    </Button>
+                </form>
+
+                {/* Footer */}
+                <p className="mt-6 text-center text-xs text-muted-foreground">
+                    Sistema automatizado de facturación electrónica
+                </p>
+            </div>
+        </motion.div>
+    );
+}
