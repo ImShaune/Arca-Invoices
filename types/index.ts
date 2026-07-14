@@ -1,5 +1,18 @@
 export type UserRole = "admin" | "user" | "viewer";
 
+export type TaxCondition =
+    | "responsable_inscripto"
+    | "monotributista"
+    | "exento"
+    | "consumidor_final"
+    | "no_categorizado";
+
+export type VatRate = 0 | 10.5 | 21 | 27;
+
+export type InvoiceType = "A" | "B" | "C" | "M";
+
+export type InvoiceStatus = "draft" | "emitted" | "cancelled" | "overdue";
+
 export interface Profile {
     id: string;
     email: string;
@@ -35,7 +48,11 @@ export interface Client {
     email: string | null;
     phone: string | null;
     address: string | null;
+    city: string | null;
+    province: string | null;
     tax_condition: TaxCondition;
+    notes: string | null;
+    is_active: boolean;
     created_at: string;
     updated_at: string;
 }
@@ -92,25 +109,6 @@ export interface InvoiceItem {
     total: number;
 }
 
-// Enums
-export type TaxCondition =
-    | "responsable_inscripto"
-    | "monotributista"
-    | "exento"
-    | "consumidor_final"
-    | "no_categorizado";
-
-export type VatRate = 0 | 10.5 | 21 | 27;
-
-export type InvoiceType = "A" | "B" | "C" | "M";
-
-export type InvoiceStatus =
-    | "draft"
-    | "emitted"
-    | "cancelled"
-    | "overdue";
-
-// Utilidades genéricas
 export interface PaginatedResponse<T> {
     data: T[];
     count: number;
