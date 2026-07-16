@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/shared/page-header";
 import { InvoiceStatusBadge } from "../_components/invoice-status-badge";
 import { PDFDownloadButton } from "./_components/pdf-download-button";
+import { AuthorizeButton } from "./_components/authorize-button";
 import { formatCurrency, formatDate, formatCuit } from "@/lib/utils";
 import type { Company, Client, Invoice, InvoiceItem } from "@/types";
 
@@ -52,6 +53,7 @@ export default async function FacturaDetailPage({ params }: PageProps) {
             >
                 <div className="flex items-center gap-2">
                     <InvoiceStatusBadge status={invoice.status} />
+                    <AuthorizeButton invoiceId={invoice.id} status={invoice.status} />
                     <PDFDownloadButton
                         invoice={invoiceWithItems as Invoice & { items: InvoiceItem[] }}
                         client={client as Client}
@@ -63,6 +65,35 @@ export default async function FacturaDetailPage({ params }: PageProps) {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 {/* Detalle principal */}
                 <div className="space-y-6 lg:col-span-2">
+
+                    {/* Datos del comprobante */}
+                    <div className="rounded-xl border bg-card p-6 space-y-3">
+                        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                            Comprobante
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p className="text-muted-foreground">Tipo</p>
+                                <p className="font-medium">Factura {invoice.type}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Número</p>
+                                <p className="font-medium">
+                                    {String(invoice.point_of_sale).padStart(4, "0")}-{String(invoice.number).padStart(8, "0")}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Fecha</p>
+                                <p className="font-medium">{formatDate(invoice.date)}</p>
+                            </div>
+                            {invoice.due_date && (
+                                <div>
+                                    <p className="text-muted-foreground">Vencimiento</p>
+                                    <p className="font-medium">{formatDate(invoice.due_date)}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Cliente */}
                     <div className="rounded-xl border bg-card p-6 space-y-3">
@@ -78,6 +109,9 @@ export default async function FacturaDetailPage({ params }: PageProps) {
                         {client?.email && (
                             <p className="text-sm text-muted-foreground">{client.email}</p>
                         )}
+                        {client?.address && (
+                            <p className="text-sm text-muted-foreground">{client.address}</p>
+                        )}
                     </div>
 
                     {/* Items */}
@@ -87,28 +121,55 @@ export default async function FacturaDetailPage({ params }: PageProps) {
                                 Productos y servicios
                             </h3>
                         </div>
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b bg-muted/30">
-                                    <th className="px-6 py-3 text-left font-medium text-muted-foreground">Descripción</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Cant.</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Precio</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">IVA</th>
-                                    <th className="px-6 py-3 text-right font-medium text-muted-foreground">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {items.map((item) => (
-                                    <tr key={item.id} className="border-b last:border-0">
-                                        <td className="px-6 py-3">{item.description}</td>
-                                        <td className="px-4 py-3 text-right text-muted-foreground">{item.quantity}</td>
-                                        <td className="px-4 py-3 text-right text-muted-foreground">{formatCurrency(item.unit_price)}</td>
-                                        <td className="px-4 py-3 text-right text-muted-foreground">{item.vat_rate}%</td>
-                                        <td className="px-6 py-3 text-right font-medium">{formatCurrency(item.total)}</td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm min-w-[700px]">
+                                <thead>
+                                    <tr className="border-b bg-muted/30">
+                                        <th className="px-6 py-3 text-left font-medium text-muted-foreground">
+                                            Descripción
+                                        </th>
+                                        <th className="px-4 py-3 text-right font-medium text-muted-foreground whitespace-nowrap">
+                                            Cant.
+                                        </th>
+                                        <th className="px-4 py-3 text-right font-medium text-muted-foreground whitespace-nowrap">
+                                            Precio unit.
+                                        </th>
+                                        <th className="px-4 py-3 text-right font-medium text-muted-foreground whitespace-nowrap w-16">
+                                            % IVA
+                                        </th>
+                                        <th className="px-4 py-3 text-right font-medium text-muted-foreground whitespace-nowrap w-24">
+                                            IVA $
+                                        </th>
+                                        <th className="px-6 py-3 text-right font-medium text-muted-foreground whitespace-nowrap w-28">
+                                            Total
+                                        </th>
+
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {items.map((item) => (
+                                        <tr key={item.id} className="border-b last:border-0">
+                                            <td className="px-6 py-3">{item.description}</td>
+                                            <td className="px-4 py-3 text-right text-muted-foreground whitespace-nowrap">
+                                                {item.quantity}
+                                            </td>
+                                            <td className="px-4 py-3 text-right text-muted-foreground whitespace-nowrap">
+                                                {formatCurrency(item.unit_price)}
+                                            </td>
+                                            <td className="px-4 py-3 text-right text-muted-foreground whitespace-nowrap">
+                                                {item.vat_rate}%
+                                            </td>
+                                            <td className="px-4 py-3 text-right text-muted-foreground whitespace-nowrap">
+                                                {formatCurrency(item.vat_amount)}
+                                            </td>
+                                            <td className="px-6 py-3 text-right font-medium whitespace-nowrap">
+                                                {formatCurrency(item.total)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     {/* Notas */}
@@ -122,8 +183,10 @@ export default async function FacturaDetailPage({ params }: PageProps) {
                     )}
                 </div>
 
-                {/* Totales */}
+                {/* Columna lateral */}
                 <div className="space-y-4">
+
+                    {/* Totales */}
                     <div className="rounded-xl border bg-card p-6 space-y-4">
                         <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
                             Resumen
@@ -146,11 +209,14 @@ export default async function FacturaDetailPage({ params }: PageProps) {
 
                     {/* CAE */}
                     {invoice.cae && (
-                        <div className="rounded-xl border bg-card p-6 space-y-2">
+                        <div className="rounded-xl border bg-card p-6 space-y-3">
                             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
                                 CAE
                             </h3>
-                            <p className="text-sm font-mono">{invoice.cae}</p>
+                            <p className="text-xs text-muted-foreground">
+                                Comprobante autorizado por ARCA
+                            </p>
+                            <p className="text-sm font-mono font-semibold">{invoice.cae}</p>
                             {invoice.cae_expiry && (
                                 <p className="text-xs text-muted-foreground">
                                     Vence: {formatDate(invoice.cae_expiry)}
@@ -158,6 +224,20 @@ export default async function FacturaDetailPage({ params }: PageProps) {
                             )}
                         </div>
                     )}
+
+                    {/* Empresa emisora */}
+                    <div className="rounded-xl border bg-card p-6 space-y-2">
+                        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                            Emisor
+                        </h3>
+                        <p className="text-sm font-semibold">{company.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                            CUIT: {formatCuit(company.cuit)}
+                        </p>
+                        {company.address && (
+                            <p className="text-xs text-muted-foreground">{company.address}</p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

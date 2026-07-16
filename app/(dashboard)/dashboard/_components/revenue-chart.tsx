@@ -32,22 +32,22 @@ export function RevenueChart({ data }: RevenueChartProps) {
                             <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                         </linearGradient>
                     </defs>
-                    <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="hsl(var(--border))"
-                        vertical={false}
-                    />
                     <XAxis
                         dataKey="month"
-                        tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                        tick={{ fontSize: 12, fill: "#888888" }}
                         axisLine={false}
                         tickLine={false}
                     />
                     <YAxis
-                        tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                        tick={{ fontSize: 12, fill: "#888888" }}
                         axisLine={false}
                         tickLine={false}
                         tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+                    />
+                    <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="#333333"
+                        vertical={false}
                     />
                     <Tooltip
                         contentStyle={{
@@ -55,9 +55,10 @@ export function RevenueChart({ data }: RevenueChartProps) {
                             border: "1px solid hsl(var(--border))",
                             borderRadius: "8px",
                             fontSize: "12px",
+                            color: "hsl(var(--foreground))",
                         }}
                         formatter={(value) => [formatCurrency(value as number), "Total"]}
-                        labelStyle={{ color: "hsl(var(--foreground))" }}
+                        labelStyle={{ color: "hsl(var(--muted-foreground))" }}
                     />
                     <Area
                         type="monotone"
