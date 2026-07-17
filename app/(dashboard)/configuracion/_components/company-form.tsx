@@ -14,12 +14,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { updateCompanyAction, type CompanyFormData } from "../_actions/settings";
+import { LogoUpload } from "./logo-upload";
 
 interface CompanyFormProps {
-    company: CompanyFormData & { id: string };
+    company: CompanyFormData & { id: string; logo_url?: string | null };
+    userId: string;
 }
 
-export function CompanyForm({ company }: CompanyFormProps) {
+export function CompanyForm({ company, userId }: CompanyFormProps) {
     const {
         register,
         handleSubmit,
@@ -52,6 +54,17 @@ export function CompanyForm({ company }: CompanyFormProps) {
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+            {/* Logo */}
+            <div className="rounded-xl border bg-card p-6">
+                <LogoUpload
+                    companyId={company.id}
+                    currentLogo={company.logo_url ?? null}
+                    userId={userId}
+                />
+            </div>
+
+            {/* Datos de la empresa */}
             <div className="rounded-xl border bg-card p-6 space-y-4">
                 <h3 className="font-semibold">Datos de la empresa</h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -102,6 +115,7 @@ export function CompanyForm({ company }: CompanyFormProps) {
                 </div>
             </div>
 
+            {/* Configuración ARCA */}
             <div className="rounded-xl border bg-card p-6 space-y-4">
                 <h3 className="font-semibold">Configuración ARCA</h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

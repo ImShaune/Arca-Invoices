@@ -1,14 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LogOut, User } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getInitials } from "@/lib/utils";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -16,9 +15,10 @@ import {
 interface UserMenuProps {
     email: string;
     fullName?: string | null;
+    logoUrl?: string | null;
 }
 
-export function UserMenu({ email, fullName }: UserMenuProps) {
+export function UserMenu({ email, fullName, logoUrl }: UserMenuProps) {
     const router = useRouter();
     const supabase = createClient();
 
@@ -33,24 +33,24 @@ export function UserMenu({ email, fullName }: UserMenuProps) {
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent outline-none">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                    {initials}
+            <DropdownMenuTrigger className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent outline-none transition-colors">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary overflow-hidden text-xs font-semibold text-primary-foreground shrink-0">
+                    {logoUrl ? (
+                        <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" />
+                    ) : (
+                        <span>{initials}</span>
+                    )}
                 </div>
                 <div className="hidden flex-col items-start md:flex">
-                    <span className="text-sm font-medium leading-none">
-                        {fullName || "Usuario"}
-                    </span>
+                    <span className="text-sm font-medium leading-none">{fullName || "Usuario"}</span>
                     <span className="text-xs text-muted-foreground">{email}</span>
                 </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    Perfil
-                </DropdownMenuItem>
+                <div className="px-3 py-2">
+                    <p className="text-sm font-medium">{fullName || "Usuario"}</p>
+                    <p className="text-xs text-muted-foreground">{email}</p>
+                </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                     onClick={handleSignOut}

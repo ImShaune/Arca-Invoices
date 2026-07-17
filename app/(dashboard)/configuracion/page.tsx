@@ -26,7 +26,7 @@ export default async function ConfiguracionPage() {
                 />
             </AnimateIn>
             <AnimateIn delay={0.1}>
-                <CompanyForm company={company} />
+                <CompanyForm company={company} userId={user.id} />
             </AnimateIn>
         </div>
     );
