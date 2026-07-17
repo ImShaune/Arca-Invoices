@@ -6,8 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { Loader2, FileText, Eye, EyeOff, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Loader2, FileText, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,48 +14,73 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-const loginSchema = z.object({
-    email: z
-        .string()
-        .min(1, "El email es requerido")
-        .email("El email no es válido"),
-    password: z
-        .string()
-        .min(1, "La contraseña es requerida")
-        .min(6, "La contraseña debe tener al menos 6 caracteres"),
+const registerSchema = z.object({
+    companyName: z.string().min(1, "El nombre de la empresa es requerido"),
+    email: z.string().min(1, "El email es requerido").email("El email no es válido"),
+    password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+    confirmPassword: z.string().min(1, "Confirmá la contraseña"),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
 });
 
-type LoginFormData = z.infer<typeof loginSchema>;
+type RegisterFormData = z.infer<typeof registerSchema>;
 
-export default function LoginPage() {
+export default function RegisterPage() {
     const router = useRouter();
     const supabase = createClient();
-    const { theme, setTheme } = useTheme();
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [authError, setAuthError] = useState<string | null>(null);
 
     const {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-    } = useForm<LoginFormData>({
-        resolver: zodResolver(loginSchema),
+    } = useForm<RegisterFormData>({
+        resolver: zodResolver(registerSchema),
     });
 
-    async function onSubmit(data: LoginFormData) {
+    async function onSubmit(data: RegisterFormData) {
         setAuthError(null);
 
-        const { error } = await supabase.auth.signInWithPassword({
+        // Registrar usuario
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
             email: data.email,
             password: data.password,
+            options: {
+                data: { full_name: data.companyName },
+            },
         });
 
-        if (error) {
+        if (signUpError) {
             setAuthError(
-                error.message === "Invalid login credentials"
-                    ? "Email o contraseña incorrectos"
-                    : "Ocurrió un error. Intentá de nuevo."
+                signUpError.message === "User already registered"
+                    ? "Ya existe una cuenta con ese email"
+                    : "Error al crear la cuenta. Intentá de nuevo."
             );
+            return;
+        }
+
+        if (!authData.user) {
+            setAuthError("Error al crear la cuenta");
+            return;
+        }
+
+        // Crear empresa
+        const { error: companyError } = await supabase
+            .from("companies")
+            .insert({
+                owner_id: authData.user.id,
+                name: data.companyName,
+                cuit: "00-00000000-0",
+                tax_condition: "responsable_inscripto",
+                arca_environment: "homologacion",
+                arca_point_of_sale: 1,
+            });
+
+        if (companyError) {
+            setAuthError("Error al crear la empresa. Contactá soporte.");
             return;
         }
 
@@ -71,19 +95,6 @@ export default function LoginPage() {
             transition={{ duration: 0.4, ease: "easeOut" }}
             className="w-full max-w-md px-4"
         >
-            {/* Theme toggle flotante */}
-            <div className="flex justify-end mb-4">
-                <button
-                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg border bg-card/80 backdrop-blur-sm hover:bg-accent transition-colors"
-                    aria-label="Cambiar tema"
-                >
-                    <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                    <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                </button>
-            </div>
-
-            {/* Card con glassmorphism */}
             <div className="rounded-2xl border bg-card/80 p-8 shadow-2xl backdrop-blur-sm">
                 {/* Logo */}
                 <div className="mb-8 flex flex-col items-center gap-3">
@@ -91,14 +102,14 @@ export default function LoginPage() {
                         <FileText className="h-6 w-6 text-primary-foreground" />
                     </div>
                     <div className="text-center">
-                        <h1 className="text-2xl font-bold tracking-tight">ARCA Invoices</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">Crear cuenta</h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Iniciá sesión para continuar
+                            Empezá a facturar electrónicamente
                         </p>
                     </div>
                 </div>
 
-                {/* Error de autenticación */}
+                {/* Error */}
                 {authError && (
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
@@ -111,6 +122,19 @@ export default function LoginPage() {
 
                 {/* Formulario */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="companyName">Nombre de la empresa</Label>
+                        <Input
+                            id="companyName"
+                            placeholder="Mi Empresa S.A."
+                            {...register("companyName")}
+                            className={cn(errors.companyName && "border-destructive")}
+                        />
+                        {errors.companyName && (
+                            <p className="text-xs text-destructive">{errors.companyName.message}</p>
+                        )}
+                    </div>
+
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
                         <Input
@@ -133,7 +157,6 @@ export default function LoginPage() {
                                 id="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
-                                autoComplete="current-password"
                                 {...register("password")}
                                 className={cn("pr-10", errors.password && "border-destructive")}
                             />
@@ -141,12 +164,8 @@ export default function LoginPage() {
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                             >
-                                {showPassword
-                                    ? <EyeOff className="h-4 w-4" />
-                                    : <Eye className="h-4 w-4" />
-                                }
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
                         </div>
                         {errors.password && (
@@ -154,30 +173,48 @@ export default function LoginPage() {
                         )}
                     </div>
 
+                    <div className="space-y-2">
+                        <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+                        <div className="relative">
+                            <Input
+                                id="confirmPassword"
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="••••••••"
+                                {...register("confirmPassword")}
+                                className={cn("pr-10", errors.confirmPassword && "border-destructive")}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            >
+                                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                        </div>
+                        {errors.confirmPassword && (
+                            <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
+                        )}
+                    </div>
+
                     <Button type="submit" className="w-full" disabled={isSubmitting}>
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Iniciando sesión...
+                                Creando cuenta...
                             </>
                         ) : (
-                            "Iniciar sesión"
+                            "Crear cuenta"
                         )}
                     </Button>
                 </form>
 
-                {/* Link a registro */}
-                <div className="mt-6 text-center space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                        ¿No tenés cuenta?{" "}
-                        <Link href="/register" className="font-medium text-primary hover:underline">
-                            Crear cuenta
-                        </Link>
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                        Sistema automatizado de facturación electrónica
-                    </p>
-                </div>
+                {/* Link a login */}
+                <p className="mt-6 text-center text-sm text-muted-foreground">
+                    ¿Ya tenés cuenta?{" "}
+                    <Link href="/login" className="font-medium text-primary hover:underline">
+                        Iniciá sesión
+                    </Link>
+                </p>
             </div>
         </motion.div>
     );
