@@ -6,6 +6,7 @@ import { PDFDownloadButton } from "./_components/pdf-download-button";
 import { AuthorizeButton } from "./_components/authorize-button";
 import { formatCurrency, formatDate, formatCuit } from "@/lib/utils";
 import type { Company, Client, Invoice, InvoiceItem } from "@/types";
+import { CancelButton } from "./_components/cancel-button";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -54,6 +55,7 @@ export default async function FacturaDetailPage({ params }: PageProps) {
                 <div className="flex items-center gap-2">
                     <InvoiceStatusBadge status={invoice.status} />
                     <AuthorizeButton invoiceId={invoice.id} status={invoice.status} />
+                    <CancelButton invoiceId={invoice.id} status={invoice.status} />
                     <PDFDownloadButton
                         invoice={invoiceWithItems as Invoice & { items: InvoiceItem[] }}
                         client={client as Client}
@@ -63,8 +65,9 @@ export default async function FacturaDetailPage({ params }: PageProps) {
             </PageHeader>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                {/* Detalle principal */}
                 <div className="space-y-6 lg:col-span-2">
+
+
 
                     {/* Datos del comprobante */}
                     <div className="rounded-xl border bg-card p-6 space-y-3">
@@ -95,6 +98,7 @@ export default async function FacturaDetailPage({ params }: PageProps) {
                         </div>
                     </div>
 
+
                     {/* Cliente */}
                     <div className="rounded-xl border bg-card p-6 space-y-3">
                         <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
@@ -122,7 +126,7 @@ export default async function FacturaDetailPage({ params }: PageProps) {
                             </h3>
                         </div>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-sm min-w-[700px]">
+                            <table className="w-full text-sm min-w-[600px]">
                                 <thead>
                                     <tr className="border-b bg-muted/30">
                                         <th className="px-6 py-3 text-left font-medium text-muted-foreground">
@@ -134,16 +138,15 @@ export default async function FacturaDetailPage({ params }: PageProps) {
                                         <th className="px-4 py-3 text-right font-medium text-muted-foreground whitespace-nowrap">
                                             Precio unit.
                                         </th>
-                                        <th className="px-4 py-3 text-right font-medium text-muted-foreground whitespace-nowrap w-16">
-                                            % IVA
+                                        <th className="px-6 py-3 text-right font-medium text-muted-foreground whitespace-nowrap">
+                                            IVA
                                         </th>
-                                        <th className="px-4 py-3 text-right font-medium text-muted-foreground whitespace-nowrap w-24">
-                                            IVA $
-                                        </th>
-                                        <th className="px-6 py-3 text-right font-medium text-muted-foreground whitespace-nowrap w-28">
+                                        <th className="px-6 py-3 text-right font-medium text-muted-foreground whitespace-nowrap">
                                             Total
                                         </th>
-
+                                        <th className="pl-8 pr-6 py-3 text-right font-medium text-muted-foreground whitespace-nowrap">
+                                            Total
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -156,14 +159,11 @@ export default async function FacturaDetailPage({ params }: PageProps) {
                                             <td className="px-4 py-3 text-right text-muted-foreground whitespace-nowrap">
                                                 {formatCurrency(item.unit_price)}
                                             </td>
-                                            <td className="px-4 py-3 text-right text-muted-foreground whitespace-nowrap">
-                                                {item.vat_rate}%
+                                            <td className="px-6 py-3 text-right text-muted-foreground whitespace-nowrap">
+                                                {`${item.vat_rate}%  —  ${formatCurrency(item.vat_amount)}`}
                                             </td>
-                                            <td className="px-4 py-3 text-right text-muted-foreground whitespace-nowrap">
-                                                {formatCurrency(item.vat_amount)}
-                                            </td>
-                                            <td className="px-6 py-3 text-right font-medium whitespace-nowrap">
-                                                {formatCurrency(item.total)}
+                                            <td className="px-6 py-3 text-right text-muted-foreground whitespace-nowrap">
+                                                {item.vat_rate}% &nbsp;&nbsp; {formatCurrency(item.vat_amount)}
                                             </td>
                                         </tr>
                                     ))}

@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { NewInvoiceButton } from "./_components/new-invoice-button";
 import { InvoicesTable } from "./_components/invoices-table";
+import { ExportButton } from "./_components/export-button";
 
 export default async function FacturasPage() {
     const supabase = await createClient();
@@ -31,6 +32,7 @@ export default async function FacturasPage() {
                 title="Facturas"
                 description="Historial de comprobantes emitidos."
             >
+                <ExportButton invoices={invoices ?? []} />
                 <NewInvoiceButton />
             </PageHeader>
 
