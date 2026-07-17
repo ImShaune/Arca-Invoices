@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { Loader2, FileText, Eye, EyeOff, Moon, Sun } from "lucide-react";
+import { Loader2, FileText, Eye, EyeOff, Moon, Sun, ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -71,8 +71,15 @@ export default function LoginPage() {
             transition={{ duration: 0.4, ease: "easeOut" }}
             className="w-full max-w-md px-4"
         >
-            {/* Theme toggle flotante */}
-            <div className="flex justify-end mb-4">
+            {/* Barra superior */}
+            <div className="flex justify-between items-center mb-4">
+                <Link
+                    href="/"
+                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Volver
+                </Link>
                 <button
                     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                     className="flex h-9 w-9 items-center justify-center rounded-lg border bg-card/80 backdrop-blur-sm hover:bg-accent transition-colors"
@@ -83,7 +90,7 @@ export default function LoginPage() {
                 </button>
             </div>
 
-            {/* Card con glassmorphism */}
+            {/* Card */}
             <div className="rounded-2xl border bg-card/80 p-8 shadow-2xl backdrop-blur-sm">
                 {/* Logo */}
                 <div className="mb-8 flex flex-col items-center gap-3">
@@ -98,7 +105,7 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-                {/* Error de autenticación */}
+                {/* Error */}
                 {authError && (
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
@@ -166,7 +173,7 @@ export default function LoginPage() {
                     </Button>
                 </form>
 
-                {/* Link a registro */}
+                {/* Links */}
                 <div className="mt-6 text-center space-y-2">
                     <p className="text-sm text-muted-foreground">
                         ¿No tenés cuenta?{" "}
