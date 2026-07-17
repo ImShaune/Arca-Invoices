@@ -3,6 +3,7 @@ import { FileText } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { NewInvoiceButton } from "./_components/new-invoice-button";
 import { InvoicesTable } from "./_components/invoices-table";
 import { ExportButton } from "./_components/export-button";
@@ -28,25 +29,29 @@ export default async function FacturasPage() {
 
     return (
         <div className="flex flex-col gap-6">
-            <PageHeader
-                title="Facturas"
-                description="Historial de comprobantes emitidos."
-            >
-                <ExportButton invoices={invoices ?? []} />
-                <NewInvoiceButton />
-            </PageHeader>
-
-            {!invoices || invoices.length === 0 ? (
-                <EmptyState
-                    icon={FileText}
-                    title="No hay facturas"
-                    description="Todavía no emitiste ningún comprobante."
+            <AnimateIn>
+                <PageHeader
+                    title="Facturas"
+                    description="Historial de comprobantes emitidos."
                 >
+                    <ExportButton invoices={invoices ?? []} />
                     <NewInvoiceButton />
-                </EmptyState>
-            ) : (
-                <InvoicesTable invoices={invoices} />
-            )}
+                </PageHeader>
+            </AnimateIn>
+
+            <AnimateIn delay={0.2}>
+                {!invoices || invoices.length === 0 ? (
+                    <EmptyState
+                        icon={FileText}
+                        title="No hay facturas"
+                        description="Todavía no emitiste ningún comprobante."
+                    >
+                        <NewInvoiceButton />
+                    </EmptyState>
+                ) : (
+                    <InvoicesTable invoices={invoices} />
+                )}
+            </AnimateIn>
         </div>
     );
 }

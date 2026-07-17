@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -57,9 +58,12 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
                         </tr>
                     </thead>
                     <tbody>
-                        {invoices.map((invoice) => (
-                            <tr
+                        {invoices.map((invoice, index) => (
+                            <motion.tr
                                 key={invoice.id}
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, delay: index * 0.05 }}
                                 className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
                                 onClick={() => router.push(`/facturas/${invoice.id}`)}
                             >
@@ -98,7 +102,7 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </td>
-                            </tr>
+                            </motion.tr>
                         ))}
                     </tbody>
                 </table>

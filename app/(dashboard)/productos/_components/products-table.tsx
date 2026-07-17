@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Pencil, Trash2, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -39,9 +40,12 @@ export function ProductsTable({ products }: ProductsTableProps) {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.map((product) => (
-                                <tr
+                            {products.map((product, index) => (
+                                <motion.tr
                                     key={product.id}
+                                    initial={{ opacity: 0, y: 8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, delay: index * 0.05 }}
                                     className="border-b last:border-0 hover:bg-muted/30 transition-colors"
                                 >
                                     <td className="px-4 py-3">
@@ -89,7 +93,7 @@ export function ProductsTable({ products }: ProductsTableProps) {
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </td>
-                                </tr>
+                                </motion.tr>
                             ))}
                         </tbody>
                     </table>

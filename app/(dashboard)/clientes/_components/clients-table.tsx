@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Pencil, Trash2, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -37,27 +38,20 @@ export function ClientsTable({ clients }: ClientsTableProps) {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b">
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                                    Nombre
-                                </th>
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                                    CUIT / DNI
-                                </th>
-                                <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground md:table-cell">
-                                    Email
-                                </th>
-                                <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground lg:table-cell">
-                                    Condición
-                                </th>
-                                <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                                    Acciones
-                                </th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nombre</th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">CUIT / DNI</th>
+                                <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground md:table-cell">Email</th>
+                                <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground lg:table-cell">Condición</th>
+                                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {clients.map((client) => (
-                                <tr
+                            {clients.map((client, index) => (
+                                <motion.tr
                                     key={client.id}
+                                    initial={{ opacity: 0, y: 8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, delay: index * 0.05 }}
                                     className="border-b last:border-0 hover:bg-muted/30 transition-colors"
                                 >
                                     <td className="px-4 py-3 font-medium">{client.name}</td>
@@ -96,14 +90,13 @@ export function ClientsTable({ clients }: ClientsTableProps) {
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </td>
-                                </tr>
+                                </motion.tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            {/* Modales */}
             <ClientDialog
                 open={!!editClient}
                 onOpenChange={(open) => !open && setEditClient(null)}
