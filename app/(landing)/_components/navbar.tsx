@@ -18,37 +18,56 @@ export function Navbar() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    function scrollToSection(id: string) {
+        setMenuOpen(false);
+        const el = document.getElementById(id);
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+        }
+    }
+
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
     return (
         <motion.header
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
-                ? "border-b bg-background/80 backdrop-blur-md shadow-sm"
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled || menuOpen
+                ? "border-b bg-background/60 backdrop-blur-md shadow-sm"
                 : "bg-transparent"
                 }`}
         >
             <div className="mx-auto max-w-6xl px-6">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2">
+                    <button
+                        onClick={scrollToTop}
+                        className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                    >
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                             <FileText className="h-4 w-4 text-primary-foreground" />
                         </div>
                         <span className="font-bold text-lg">ARCA Invoices</span>
-                    </Link>
+                    </button>
 
                     {/* Links desktop */}
                     <nav className="hidden md:flex items-center gap-8">
-                        <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                            Funciones
-                        </a>
-                        <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                            Cómo funciona
-                        </a>
-                        <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                            Precios
-                        </a>
+                        {[
+                            { label: "Funciones", id: "features" },
+                            { label: "Cómo funciona", id: "how-it-works" },
+                            { label: "Precios", id: "pricing" },
+                        ].map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => scrollToSection(item.id)}
+                                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                                {item.label}
+                            </button>
+                        ))}
                     </nav>
 
                     {/* Acciones desktop */}
@@ -94,9 +113,19 @@ export function Navbar() {
                         exit={{ opacity: 0, height: 0 }}
                         className="md:hidden border-t py-4 space-y-4"
                     >
-                        <a href="#features" className="block text-sm text-muted-foreground hover:text-foreground" onClick={() => setMenuOpen(false)}>Funciones</a>
-                        <a href="#how-it-works" className="block text-sm text-muted-foreground hover:text-foreground" onClick={() => setMenuOpen(false)}>Cómo funciona</a>
-                        <a href="#pricing" className="block text-sm text-muted-foreground hover:text-foreground" onClick={() => setMenuOpen(false)}>Precios</a>
+                        {[
+                            { label: "Funciones", id: "features" },
+                            { label: "Cómo funciona", id: "how-it-works" },
+                            { label: "Precios", id: "pricing" },
+                        ].map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => scrollToSection(item.id)}
+                                className="block w-full text-left text-sm text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-accent transition-colors"
+                            >
+                                {item.label}
+                            </button>
+                        ))}
                         <div className="flex flex-col gap-2 pt-2">
                             <Link href="/login" onClick={() => setMenuOpen(false)}>
                                 <Button variant="outline" className="w-full">Iniciar sesión</Button>
@@ -110,4 +139,4 @@ export function Navbar() {
             </div>
         </motion.header>
     );
-}   
+}

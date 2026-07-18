@@ -110,7 +110,7 @@ export function Hero() {
                         </div>
                         {/* Contenido fake del dashboard */}
                         <div className="p-6 space-y-4">
-                            <div className="grid grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                 {["Facturación del mes", "Facturas emitidas", "Clientes activos", "Productos"].map((label, i) => (
                                     <div key={i} className="rounded-lg border bg-card p-4 space-y-2">
                                         <p className="text-xs text-muted-foreground">{label}</p>
@@ -119,7 +119,7 @@ export function Hero() {
                                     </div>
                                 ))}
                             </div>
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="col-span-2 rounded-lg border bg-card p-4 h-32 flex items-end gap-1 pb-2">
                                     {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
                                         <div
