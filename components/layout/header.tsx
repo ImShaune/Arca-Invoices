@@ -17,7 +17,7 @@ export async function Header({ title }: HeaderProps) {
         .single() : { data: null };
 
     return (
-        <header className="flex h-16 items-center justify-between border-b bg-card px-6">
+        <header className="flex h-16 items-center justify-between border-b bg-card px-6 lg:px-6 pl-16 lg:pl-6">
             <div>
                 {title && <h1 className="text-lg font-semibold">{title}</h1>}
             </div>

@@ -25,26 +25,26 @@ export async function updateSession(request: NextRequest) {
         }
     );
 
-    // Refresca la sesión si está por vencer
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Rutas públicas que no requieren autenticación
-    const publicRoutes = ["/login", "/register", "/"];
-    const isPublicRoute = publicRoutes.some((route) =>
-        request.nextUrl.pathname.startsWith(route)
-    );
+    const pathname = request.nextUrl.pathname;
 
-    // Si no hay usuario y no es ruta pública → redirigir a login
+    const isPublicRoute =
+        pathname === "/" ||
+        pathname.startsWith("/login") ||
+        pathname.startsWith("/register") ||
+        pathname.startsWith("/verify");
+
     if (!user && !isPublicRoute) {
         const url = request.nextUrl.clone();
         url.pathname = "/login";
+        url.searchParams.set("redirectTo", pathname);
         return NextResponse.redirect(url);
     }
 
-    // Si hay usuario y está en login → redirigir a dashboard
-    if (user && isPublicRoute) {
+    if (user && (pathname.startsWith("/login") || pathname.startsWith("/register"))) {
         const url = request.nextUrl.clone();
         url.pathname = "/dashboard";
         return NextResponse.redirect(url);
